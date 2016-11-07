@@ -29,7 +29,7 @@ class ADLSputterFactory:
         logger.addHandler(fh)
         return logger
     
-    def create_lakeshore(self, device="/dev/ttyUSB15", logger=None):
+    def create_sputter(self, device="/dev/ttyUSB15", logger=None):
         if logger is None:
             logger = self.get_logger()
             
