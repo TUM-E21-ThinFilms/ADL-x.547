@@ -35,5 +35,5 @@ class ADLSputterFactory:
             
         protocol = ADLProtocol(logger=logger)
         protocol.set_name("ADL x.547 Sputter")
-        return LakeShore336Driver(Serial(device, 9600, 8, 'E', 1, 0.05), protocol)
+        return ADLSputterDriver(Serial(device, 9600, 8, 'E', 1, 0.05), protocol)
 
