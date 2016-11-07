@@ -126,8 +126,8 @@ class ADLSputterDriver(Driver):
     def convert_into_voltage(self, voltage, max_voltage=1000, coeff=4095):
         return voltage/max_voltage * coeff
     
-    def convert_into_power(self, power, max_power=500, coeff=4095)
+    def convert_into_power(self, power, max_power=500, coeff=4095):
         return power/max_power * coeff
     
-    def convert_into_current(self, current, max_current=0.9, coeff=4095)
+    def convert_into_current(self, current, max_current=0.9, coeff=4095):
         return current/max_current * coeff
