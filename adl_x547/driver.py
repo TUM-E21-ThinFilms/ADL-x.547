@@ -123,39 +123,11 @@ class ADLSputterDriver(Driver):
         msg.set_power(power)
         return self.send_message(msg)
 
-    def turn_on_cont(self):
-        self.thread = TurnOnThread()
-        self.thread.daemon = True
-        self.thread.set_driver(self)
-        self.thread.start()	
-
-    def turn_off_cont(self):
-    	if not self.thread is None:
-	    self.thread.stop()
-
-        time.sleep(1)
-        self.turn_off()
-
-class StoppableThread(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self._stop = False
-
-    def run(self):
-	    while not self._stop:
-	        self.do_execute()
-
-    def stop(self):
-        self._stop = True
-
-    def do_execute():
-	    pass
-
-class TurnOnThread(StoppableThread):
-
-    def set_driver(self, driver):
-	    self.driver = driver
-
-    def do_execute(self):
-	    self.driver.turn_on()
-	    time.sleep(1)		
+    def convert_into_voltage(self, voltage, max_voltage=1000, coeff=4095):
+        return voltage/max_voltage * coeff
+    
+    def convert_into_power(self, power, max_power=500, coeff=4095)
+        return power/max_power * coeff
+    
+    def convert_into_current(self, current, max_current=0.9, coeff=4095)
+        return current/max_current * coeff
