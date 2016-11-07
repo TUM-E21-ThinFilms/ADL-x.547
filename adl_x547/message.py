@@ -1,28 +1,30 @@
-# Copyright (C) 2016, see AUTHORS.md
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 import struct
 
 def concate_byte_list(ls):
     return b"".join(ls)
 
-def byte_to_binary(number)
+def byte_to_binary(number):
     return struct.pack('>B', number)
 
-def binary_to_byte(binary)
+def binary_to_byte(binary):
     return struct.unpack('>B', binary)[0]
+
+def crc16_modbus(data):
+    crcmask = 0xA001
+    i = 0
+    l = 0
+    crc = 0xFFFF
+    while l < len(data):
+            crc = (0x0000 | (data[l] & 0xFF)) ^ crc 
+            while(i < 8):
+                    lsb = crc & 0x1
+                    crc = crc >> 1
+                    if lsb == 1:
+                            crc = crc ^ crcmask
+                    i = i + 1
+            i = 0
+            l = l + 1
+    return crc
 
 # Byte  Content
 # 0     Slave Address
@@ -74,16 +76,17 @@ class Message(object):
         return self.msg[0]
         
     def set_terminator(self):
-        self.msg[12] = 0x3B # = 59_dev
+        self.msg[12] = 0x3B # = 59_dec
     
     def get_terminator(self):
         return self.msg[12]
                           
     def compute_crc(self):
-        crc = sum(self.msg[0:9]) & 0xFFFF
+	crc = crc16_modbus(self.msg[0:10]) & 0xFFFF
+
         self.msg[10] = crc & 0xFF
         self.msg[11] = (crc >> 8) & 0xFF
-                
+              
     def get_crc(self):
         return self.msg[10] | (self.msg[11] << 8)
         
@@ -102,8 +105,17 @@ class Message(object):
             raise ValueError("index out of range: 0-6")
         
         integer = integer & 0xFFFF
-        self.set_byte(index, (integer << 8) & 0xFF)
+        self.set_byte(index, (integer >> 8) & 0xFF)
         self.set_byte(index + 1, integer & 0xFF)
+
+    def response_length(self):
+	    return 16
+    
+    def __str__(self):
+	    return " ".join(map(hex, self.msg))
+
+    def __repr__(self):
+	r   eturn self.__str__()
 
 # Byte  Content
 # 0     Slave Address
@@ -137,7 +149,7 @@ class Response(object):
         return self.resp[1]
     
     def get_status(self):
-        return Status(self.resp[2:4])
+        return Status(self.resp[2:5])
         
     def get_byte(self, index):
         if index < 0 or index > 7:
@@ -146,31 +158,40 @@ class Response(object):
         return self.resp[index + 5]
         
     def get_crc(self):
-        return self.msg[13] | (self.msg[14] << 8) 
-    
+        return self.resp[13] | (self.resp[14] << 8) 
+
     def is_valid_crc(self):
-        return sum(self.msg[0:12]) & 0xFFFF == self.get_crc()
+	    return crc16_modbus(self.resp[0:13]) == self.get_crc()
     
     def _valid(self):
         # may implement validation for subclasses
         return True
     
     def is_valid(self):
-        return self.is_valid_crc() && self.resp[15] == 0xD && self._valid()
-    
+        if not self.resp[15] == 0xD:
+            print("did not receive terminal code")
+            return False
+
+        if not self.is_valid_crc():
+            print("received invalid crc")
+            return False
+
+        if not self._valid():
+            print("user-validation failed")
+            return False
+
+	    return True	
+
     def get_integer(self, index):
         if index < 0 or index > 6:
             raise ValueError("index out of range: 0-6")
             
         return self.get_byte(index) << 8 | self.get_byte(index + 1)
     
-    def response_length(self):
-        return 16
-    
 class Status(object):
     def __init__(self, status_bytes):
         if not len(status_bytes) == 3:
-            raise ValueError("lenght of status bytes must be 3")
+            raise ValueError("lenght of status bytes must be 3, received " + str(len(status_bytes)))
             
         self.stat = status_bytes
         
@@ -178,64 +199,64 @@ class Status(object):
         if index < 0 or index > 2:
             raise ValueError("index out of range: 0-2")
         
-        return self.resp[index]
+        return self.stat[index]
     
     def get_active_toggle(self):
         return self.get_raw(0) & 1
     
     def get_interlock(self):
-        return self.get_raw(0) & 2
+        return (self.get_raw(0) & 2) >> 1 
     
     def get_remote(self):
-        return self.get_raw(0) & 4
+        return (self.get_raw(0) & 4) >> 2
     
     def get_setpoint_ok(self):
-        return self.get_raw(0) & 8
+        return (self.get_raw(0) & 8) >> 3
     
     def get_mains_on(self):
-        return self.get_raw(0) & 16
+        return (self.get_raw(0) & 16) >> 4
     
     def get_dc_on(self):
-        return self.get_raw(0) & 32
+        return (self.get_raw(0) & 32) >> 5
     
     def get_pulse_on(self):
-        return self.get_raw(0) & 64
+        return (self.get_raw(0) & 64) >> 6
     
     def get_plasma(self):
-        return self.get_raw(0) & 128
+        return (self.get_raw(0) & 128) >> 7
             
     def get_mode_p(self):
         return self.get_raw(1) & 1
     
     def get_mode_u(self):
-        return self.get_raw(1) & 2
+        return (self.get_raw(1) & 2) >> 1
     
     def get_mode_i(self):
-        return self.get_raw(1) & 4
+        return (self.get_raw(1) & 4) >> 2
     
     def get_mode_u_ign(self):
-        return self.get_raw(1) & 8
+        return (self.get_raw(1) & 8) >> 3
     
     def get_ramp_enabled(self):
-        return self.get_raw(1) & 16
+        return (self.get_raw(1) & 16) >> 4
     
     def get_joule_mode_enabled(self):
-        return self.get_raw(1) & 32
+        return (self.get_raw(1) & 32) >> 5
     
     def get_joule_reached(self):
-        return self.get_raw(1) & 64
+        return (self.get_raw(1) & 64) >> 6
     
     def get_pulse_on_enabled(self):
-        return self.get_raw(1) & 128
+        return (self.get_raw(1) & 128) >> 7
     
     def get_error(self):
         return self.get_raw(2) & 1
     
     def get_error_on_execution(self):
-        return self.get_raw(2) & 2
+        return (self.get_raw(2) & 2) >> 1
     
     def get_watchdog(self):
-        return self.get_raw(2) & 4
+        return (self.get_raw(2) & 4) >> 2
     
     def get_error_code(self):
         return self.get_raw(2) >> 3

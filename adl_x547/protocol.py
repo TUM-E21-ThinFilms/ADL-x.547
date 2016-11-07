@@ -1,21 +1,9 @@
-# Copyright (C) 2016, see AUTHORS.md
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-import logging
 from slave.protocol import Protocol
+import logging
 from message import Message, Response
+
+class CommunicationError(Exception):
+    pass
 
 class ADLProtocol(Protocol):
     def __init__(self, slave_addr=0, logger=None):
@@ -26,6 +14,7 @@ class ADLProtocol(Protocol):
 
         self.logger = logger
 
+        self.name = 'ADL'
         self.receiver = slave_addr
 
     def set_logger(self, logger):
@@ -46,14 +35,15 @@ class ADLProtocol(Protocol):
         self.send_message(transport, message)
         
         length = message.response_length()
-        
-        if length <= 0:
-            return message.create_response(None)
-        
-        # every resposne has 16 Bytes length.
+
         raw_response = transport.read_bytes(length)
         
-        self.logger.debug('Received response ('+str(length)+' bytes): "%s"', " ".join(map(hex, raw_response)))
+        if length <= 1:
+            return message.create_response(raw_response)
+        
+        # every resposne has 16 Bytes length.
+        
+        self.logger.debug('Response (%s bytes): "%s"', str(len(raw_response)), " ".join(map(hex, raw_response)))
        
         response_as_hex = []
         
@@ -63,12 +53,12 @@ class ADLProtocol(Protocol):
         response = message.create_response(response_as_hex)
 
         if not response.is_valid():
-            raise RuntimeError('Received an invalid response packet.')
+            raise CommunicationError('Received an invalid response packet.')
         
         status = response.get_status()
         
-        if status.get_error() > 0 or status.get_error_on_execution() > 0:
-            self.logger.error("Received error code: %s", status.get_error_code())            
+        if status.get_error() > 0 or status.get_error_on_execution() > 0 or status.get_error_code() > 0:
+            self.logger.error('Received error code: %s', status.get_error_code())            
         
         return response
 
