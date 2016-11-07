@@ -1,3 +1,5 @@
+import slave
+from slave.transport import Timeout
 from slave.protocol import Protocol
 import logging
 from message import Message, Response
@@ -42,7 +44,10 @@ class ADLProtocol(Protocol):
         
         length = message.response_length()
 
-        raw_response = transport.read_bytes(length)
+	try:
+            raw_response = transport.read_bytes(length)
+	except slave.transport.Timeout:
+	    raise CommunicationError('Could not read response. Timeout')
         
         if length <= 1:
             return message.create_response(raw_response)
