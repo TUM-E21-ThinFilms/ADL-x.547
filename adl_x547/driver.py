@@ -139,9 +139,9 @@ class StoppableThread(threading.Thread):
 
 class TurnOnThread(StoppableThread):
 
-    def set_driver(driver):
+    def set_driver(self, driver):
 	    self.driver = driver
 
-    def do_execute():
+    def do_execute(self):
 	    self.driver.turn_on()
 	    time.sleep(1)		
