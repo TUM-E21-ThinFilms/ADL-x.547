@@ -13,13 +13,19 @@ class ADLProtocol(Protocol):
             logger.addHandler(logging.NullHandler())
 
         self.logger = logger
-
-        self.name = 'ADL'
         self.receiver = slave_addr
 
     def set_logger(self, logger):
         self.logger = logger
 
+    def clear(self, transport):
+        self.logger.debug("Clearing message queue")
+        while True:
+            try:
+                transport.read_bytes(32)
+            except slave.transport.Timeout:
+                return
+        
     def send_message(self, transport, message):
         
         message.set_slave_addr(self.receiver)

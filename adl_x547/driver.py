@@ -34,6 +34,9 @@ class ADLSputterDriver(Driver):
     def send_message(self, message):
         return self._protocol.query(self._transport, message)
 
+    def clear(self):
+        self._protocol.clear(self._transport)
+    
     def get_status(self):
         msg = StatusMessage()
         return self.send_message(msg)
