@@ -115,8 +115,8 @@ class Message(object):
 	    return " ".join(map(hex, self.msg))
 
     def __repr__(self):
-	r   eturn self.__str__()
-
+	    return self.__str__()
+    
 # Byte  Content
 # 0     Slave Address
 # 1     Function Code
