@@ -22,6 +22,5 @@ class ADLSputterFactory:
             logger = self.get_logger()
             
         protocol = ADLProtocol(logger=logger)
-        protocol.set_name("ADL x.547 Sputter")
         return ADLSputterDriver(Serial(device, 9600, 8, 'E', 1, 0.05), protocol)
 

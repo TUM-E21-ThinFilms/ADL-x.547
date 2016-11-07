@@ -179,8 +179,8 @@ class Response(object):
         if not self._valid():
             print("user-validation failed")
             return False
-
-	    return True	
+        
+        return True	
 
     def get_integer(self, index):
         if index < 0 or index > 6:
