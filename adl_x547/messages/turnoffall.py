@@ -1,4 +1,4 @@
-from controllers.adl.message import Message, Response
+from adl_x547.message import Message, Response
 
 class TurnOffAllMessage(Message):
     def __init__(self):

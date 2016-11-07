@@ -1,5 +1,5 @@
-from controllers.adl.message import Message, Response
-from controllers.adl.messages.null import NullResponse
+from adl_x547.message import Message, Response
+from adl_x547.messages.null import NullResponse
 
 class ResetMessage(Message):
     
