@@ -19,14 +19,14 @@ class ActualValueMessage(Message):
     
     def __init__(self):
         Message.__init__(self)
-        self.set_function_code(2)
+        self.set_function_code(3)
     
     def create_response(self, raw_bytes):
         return ActualValueResponse(raw_bytes)
 
 class ActualValueResponse(Response):
     def _valid(self):
-        return self.get_function_code() == 2
+        return self.get_function_code() == 3
     
     def get_voltage(self):
         return self.get_byte(0) << 8 | self.get_byte(1)
