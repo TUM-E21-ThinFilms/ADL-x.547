@@ -1,3 +1,4 @@
+
 # Copyright (C) 2016, see AUTHORS.md
 #
 # This program is free software: you can redistribute it and/or modify
@@ -124,10 +125,10 @@ class ADLSputterDriver(Driver):
         return self.send_message(msg)
 
     def convert_into_voltage(self, voltage, max_voltage=1000, coeff=4095):
-        return voltage/max_voltage * coeff
+        return int(float(voltage)/max_voltage * coeff)
     
     def convert_into_power(self, power, max_power=500, coeff=4095):
-        return power/max_power * coeff
+        return int(float(power)/max_power * coeff)
     
     def convert_into_current(self, current, max_current=0.9, coeff=4095):
-        return current/max_current * coeff
+        return int(float(current)/max_current * coeff)
