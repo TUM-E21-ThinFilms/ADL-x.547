@@ -129,17 +129,17 @@ class ADLSputterDriver(Driver):
         if mode not in [self.MODE_CURRENT, self.MODE_POWER, self.MODE_VOLTAGE]:
             raise ValueError("mode must be either current, power or voltage")
 
-        if mode is self.MODE_CURRENT:
+        if mode == self.MODE_CURRENT:
             if convert:
                 value = self.convert_into_current(value)
 
             return self.set_mode_i(value)
-        elif mode is self.MODE_POWER:
+        elif mode == self.MODE_POWER:
             if convert:
                 value = self.convert_into_power(value)
 
             return self.set_mode_p(value)
-        else:
+        elif mode == self.MODE_VOLTAGE:
             if convert:
                 value = self.convert_into_voltage(value)
 
