@@ -15,9 +15,11 @@
 
 import slave
 import logging
+
+from threading import Semaphore
+
 from slave.transport import Timeout
 from slave.protocol import Protocol
-from message import Message, Response
 
 class CommunicationError(Exception):
     pass
@@ -31,6 +33,7 @@ class ADLProtocol(Protocol):
 
         self.logger = logger
         self.receiver = slave_addr
+        self.semaphore = Semaphore(1)
 
     def set_logger(self, logger):
         self.logger = logger
@@ -52,39 +55,55 @@ class ADLProtocol(Protocol):
         self.logger.debug('Send: "%s"', message)
 
         transport.write(data)
-        
-    def query(self, transport, message):
-        
+
+    def _do_query(self, transport, message):
+
         self.send_message(transport, message)
-        
+
         length = message.response_length()
 
-	try:
+        try:
             raw_response = transport.read_bytes(length)
-	except slave.transport.Timeout:
-	    raise CommunicationError('Could not read response. Timeout')
-        
+        except slave.transport.Timeout:
+            raise CommunicationError('Could not read response. Timeout')
+
         if length <= 1:
             return message.create_response(raw_response)
-        
+
         self.logger.debug('Response (%s bytes): "%s"', str(len(raw_response)), " ".join(map(hex, raw_response)))
-       
+
         response_as_hex = []
-        
+
         for i in range(0, length):
             response_as_hex.append(raw_response[i])
-        
+
         response = message.create_response(response_as_hex)
 
         if not response.is_valid():
             raise CommunicationError('Received an invalid response packet.')
-        
+
         status = response.get_status()
-        
+
         if status.get_error() > 0 or status.get_error_on_execution() > 0 or status.get_error_code() > 0:
-            self.logger.error('Received error code: %s', status.get_error_code())            
-        
+            self.logger.error('Received error code: %s', status.get_error_code())
+
         return response
+
+
+    def query(self, transport, message):
+        try:
+            # We need here a semaphore, to block threads:
+            # Turning the sputter on, and changing the power while running
+            # might interfere two messages. In order to fix this, only
+            # let one query pass thrugh the serial interface at one time (until
+            # the response has been read).
+            self.semaphore.acquire()
+            self._do_query(transport, message)
+        except Exception as e:
+            raise e
+        finally:
+            self.semaphore.release()
+
 
     def write(self, transport, message):
         return self.query(transport, message)
