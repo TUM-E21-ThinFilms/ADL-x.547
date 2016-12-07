@@ -16,13 +16,14 @@
 import slave
 import logging
 
+import e21_util
+from e21_util.lock import InterProcessTransportLock
+from e21_util.error import CommunicationError
+
 from threading import Semaphore
 
 from slave.transport import Timeout
 from slave.protocol import Protocol
-
-class CommunicationError(Exception):
-    pass
 
 class ADLProtocol(Protocol):
     def __init__(self, slave_addr=0, logger=None):
@@ -39,12 +40,13 @@ class ADLProtocol(Protocol):
         self.logger = logger
 
     def clear(self, transport):
-        self.logger.debug("Clearing message queue")
-        while True:
-            try:
-                transport.read_bytes(32)
-            except slave.transport.Timeout:
-                return
+        with InterProcessTransportLock(transport):
+            self.logger.debug("Clearing message queue")
+            while True:
+                try:
+                    transport.read_bytes(32)
+                except slave.transport.Timeout:
+                    return
         
     def send_message(self, transport, message):
         
@@ -91,18 +93,21 @@ class ADLProtocol(Protocol):
 
 
     def query(self, transport, message):
-        try:
-            # We need here a semaphore, to block threads:
-            # Turning the sputter on, and changing the power while running
-            # might interfere two messages. In order to fix this, only
-            # let one query pass thrugh the serial interface at one time (until
-            # the response has been read).
-            self.semaphore.acquire()
-            self._do_query(transport, message)
-        except Exception as e:
-            raise e
-        finally:
-            self.semaphore.release()
+        # Note that: Process locking != Semaphore locking
+        # Since: Semaphores only work with threads
+        with InterProcessTransportLock(transport):
+            try:
+                # We need here a semaphore, to block threads:
+                # Turning the sputter on, and changing the power while running
+                # might interfere two messages. In order to fix this, only
+                # let one query pass thrugh the serial interface at one time (until
+                # the response has been read).
+                self.semaphore.acquire()
+                self._do_query(transport, message)
+            except Exception as e:
+                raise e
+            finally:
+                self.semaphore.release()
 
 
     def write(self, transport, message):

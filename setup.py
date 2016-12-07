@@ -17,7 +17,7 @@ import sys
 
 from setuptools import setup, find_packages
 
-requires = ['slave']
+requires = ['slave', 'e21_util']
 
 desc = ('An implementation of the ADL x.547 RS232 interface, Revision 1.0')
 
