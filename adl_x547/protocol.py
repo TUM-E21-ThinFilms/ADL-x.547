@@ -103,7 +103,7 @@ class ADLProtocol(Protocol):
                 # let one query pass thrugh the serial interface at one time (until
                 # the response has been read).
                 self.semaphore.acquire()
-                self._do_query(transport, message)
+                return self._do_query(transport, message)
             except Exception as e:
                 raise e
             finally:
