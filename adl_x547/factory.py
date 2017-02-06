@@ -38,3 +38,13 @@ class ADLSputterFactory:
         protocol = ADLProtocol(logger=logger)
         return ADLSputterDriver(Serial(device, 9600, 8, 'E', 1, 0.05), protocol)
 
+    def create_sputter_a(self):
+        return self.create_sputter()
+
+    def create_sputter_b(self, device='/dev/ttyUSB18', logger=None):
+        if logger is None:
+            logger = self.get_logger()
+
+        protocol = ADLProtocol(logger=logger)
+        return ADLSputterDriver(Serial(device, 9600, 8, 'E', 1, 0.05), protocol)
+
