@@ -125,23 +125,23 @@ class ADLSputterDriver(Driver):
         msg = ReadTargetValueMessage()
         return self.send_message(msg)
 
-    def set_mode(self, mode, value, convert=True):
+    def set_mode(self, mode, value, convert=True, coeff=4095):
         if mode not in [self.MODE_CURRENT, self.MODE_POWER, self.MODE_VOLTAGE]:
             raise ValueError("mode must be either current, power or voltage")
 
         if mode == self.MODE_CURRENT:
             if convert:
-                value = self.convert_into_current(value)
+                value = self.convert_into_current(value, coeff)
 
             return self.set_mode_i(value)
         elif mode == self.MODE_POWER:
             if convert:
-                value = self.convert_into_power(value)
+                value = self.convert_into_power(value, coeff)
 
             return self.set_mode_p(value)
         elif mode == self.MODE_VOLTAGE:
             if convert:
-                value = self.convert_into_voltage(value)
+                value = self.convert_into_voltage(value, coeff)
 
             return self.set_mode_u(value)
 
