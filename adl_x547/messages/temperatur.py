@@ -29,4 +29,5 @@ class TemperaturResponse(Response):
         return self.get_function_code() == 101
 
     def get_temperatur(self):
+        """ Returns the temperature of the micro controllers in Celcius """
         return self.get_integer(0)

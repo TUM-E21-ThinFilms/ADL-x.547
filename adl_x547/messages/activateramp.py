@@ -26,4 +26,4 @@ class ActivateRampMessage(Message):
 
 class ActivateRampResponse(Response):
     def _valid(self):
-	    return True
+        return True

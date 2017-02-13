@@ -22,7 +22,7 @@ class PowerControlMessage(Message):
         self.set_function_code(11)
         
     def set_power(self, power):
-	    self.set_integer(0, power)
+        self.set_integer(0, power)
     
     def create_response(self, raw_bytes):
         return PowerControlResponse(raw_bytes)
@@ -32,4 +32,5 @@ class PowerControlResponse(Response):
         return self.get_function_code() == 11
 
     def get_power(self):
+        """ Returns the target power relatively, int"""
         return self.get_byte(0) << 8 | self.get_byte(1)

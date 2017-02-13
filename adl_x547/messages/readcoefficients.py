@@ -29,10 +29,13 @@ class ReadCoefficientsResponse(Response):
         return self.get_function_code() == 112
     
     def get_voltage(self):
+        """ Returns the voltage coefficient, int """
         return self.get_integer(0)
     
     def get_current(self):
+        """ Returns the current coefficient, int """
         return self.get_integer(2)
     
     def get_power(self):
+        """ Returns the power coefficient, int"""
         return self.get_integer(4)

@@ -29,5 +29,6 @@ class ReadRampResponse(Response):
         return self.get_function_code() == 33
 
     def get_time(self):
+        """ Returns the ramp time, int"""
         return self.get_integer(2)
     

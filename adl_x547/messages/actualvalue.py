@@ -29,10 +29,13 @@ class ActualValueResponse(Response):
         return self.get_function_code() == 3
     
     def get_voltage(self):
+        """ Returns the voltage (relative)"""
         return self.get_byte(0) << 8 | self.get_byte(1)
     
     def get_current(self):
+        """ Returns the current (relative)"""
         return self.get_byte(2) << 8 | self.get_byte(3)
     
     def get_power(self):
+        """ Returns the power (relative)"""
         return self.get_byte(4) << 8 | self.get_byte(5)    

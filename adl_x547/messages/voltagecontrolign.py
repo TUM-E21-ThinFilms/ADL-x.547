@@ -22,7 +22,7 @@ class VoltageControlIgnitionMessage(Message):
         self.set_function_code(12)
         
     def set_voltage(self, voltage):
-	    self.set_integer(0, voltage)
+        self.set_integer(0, voltage)
     
     def create_response(self, raw_bytes):
         return VoltageControlIgnitionResponse(raw_bytes)
@@ -32,4 +32,5 @@ class VoltageControlIgnitionResponse(Response):
         return self.get_function_code() == 12
 
     def get_voltage(self):
-	return self.get_integer(0)
+        """ Returns the target voltage relatively, int"""
+        return self.get_integer(0)

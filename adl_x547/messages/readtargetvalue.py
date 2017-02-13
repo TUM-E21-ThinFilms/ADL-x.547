@@ -29,10 +29,13 @@ class ReadTargetValueResponse(Response):
         return self.get_function_code() == 21
     
     def get_voltage(self):
+        """ Returns the target voltage relatively, int"""
         return self.get_integer(0)
     
     def get_current(self):
+        """ Returns the target current relatively, int"""
         return self.get_integer(2)
     
     def get_power(self):
+        """ Returns the target power relatively, int"""
         return self.get_integer(4)

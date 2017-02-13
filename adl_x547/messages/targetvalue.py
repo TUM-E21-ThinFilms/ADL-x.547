@@ -29,4 +29,5 @@ class TargetValueResponse(Response):
         return self.get_function_code() == 4
     
     def get_target(self):
+        """ Returns the target value relatively, int"""
         return self.get_byte(0) << 8 | self.get_byte(1)

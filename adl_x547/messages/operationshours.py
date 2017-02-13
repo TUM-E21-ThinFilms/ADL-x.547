@@ -29,7 +29,9 @@ class OperationsHoursResponse(Response):
         return self.get_function_code() == 100
 
     def get_turn_on_hours(self):
+        """ Returns the turn on hours """
         return self.get_integer(2)
     
     def get_overall_hours(self):
+        """ Returns the overall hours """
         return self.get_integer(0)

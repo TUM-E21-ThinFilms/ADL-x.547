@@ -32,4 +32,5 @@ class VoltageControlResponse(Response):
         return self.get_function_code() == 9
 
     def get_voltage(self):
+        """ Returns the target voltage relatively, int"""
         return self.get_byte(0) << 8 | self.get_byte(1)

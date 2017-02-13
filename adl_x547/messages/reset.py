@@ -26,4 +26,4 @@ class ResetMessage(Message):
         return NullResponse(raw_bytes)
 
     def response_length(self):
-	    return 1
+        return 1

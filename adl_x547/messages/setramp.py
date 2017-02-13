@@ -32,5 +32,6 @@ class SetRampResponse(Response):
         return self.get_function_code() == 30
 
     def get_time(self):
+        """ Returns the ramp time, int"""
         return self.get_integer(2)
     

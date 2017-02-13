@@ -29,6 +29,7 @@ class ArcCounterResponse(Response):
         return self.get_function_code() == 6
     
     def get_arc_count(self):
+        """ Returns the number of arcs """
         return self.get_byte(2) << 8 | self.get_byte(3)
     
   
