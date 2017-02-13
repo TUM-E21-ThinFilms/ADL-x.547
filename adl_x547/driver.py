@@ -131,17 +131,17 @@ class ADLSputterDriver(Driver):
 
         if mode == self.MODE_CURRENT:
             if convert:
-                value = self.convert_into_current(value, coeff)
+                value = self.convert_into_current(value, coeff=coeff)
 
             return self.set_mode_i(value)
         elif mode == self.MODE_POWER:
             if convert:
-                value = self.convert_into_power(value, coeff)
+                value = self.convert_into_power(value, coeff=coeff)
 
             return self.set_mode_p(value)
         elif mode == self.MODE_VOLTAGE:
             if convert:
-                value = self.convert_into_voltage(value, coeff)
+                value = self.convert_into_voltage(value, coeff=coeff)
 
             return self.set_mode_u(value)
 
