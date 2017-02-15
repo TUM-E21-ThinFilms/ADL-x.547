@@ -70,6 +70,21 @@ class ADLSputterDriver(Driver):
 
         raise ValueError("Unknown model %s" % model)
 
+    def get_rating(self, rating_type):
+        """ Returns the maximum rating of the device model, i.e. voltage, current or power#
+        :param rating_type: what rating to retrieve? voltage, current or power e.g MODE_VOLTAGE
+        :return int the maximum rating of the device.
+        """
+        if not rating_type in [self.MODE_CURRENT, self.MODE_POWER, self.MODE_VOLTAGE]:
+            raise ValueError("rating type must be either MODE_CURRENT, MODE_POWER or MODE_VOLTAGE")
+
+        if rating_type == self.MODE_VOLTAGE:
+            return self.max_current
+        if rating_type == self.MODE_POWER:
+            return self.max_power
+        if rating_type == self.MODE_VOLTAGE:
+            return self.max_current
+
     def send_message(self, message):
         """ Sends the messages, via the protocol to the transport output
 
