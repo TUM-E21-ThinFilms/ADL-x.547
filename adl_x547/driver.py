@@ -260,4 +260,4 @@ class ADLSputterDriver(Driver):
         :param max_rating: the maximum rating of the value. E.g. the model GS 05/1000 has a max rating of 1000 Watt
         :param coeff: the coefficient used to convert (depends on the device settings)
         """
-        return relative_value / coeff * max_rating
+        return float(relative_value) / coeff * max_rating
