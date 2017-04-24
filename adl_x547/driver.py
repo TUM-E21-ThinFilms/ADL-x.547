@@ -83,7 +83,7 @@ class ADLSputterDriver(Driver):
         if rating_type == self.MODE_POWER:
             return self.max_power
         if rating_type == self.MODE_VOLTAGE:
-            return self.max_current
+            return self.max_voltage
 
     def send_message(self, message):
         """ Sends the messages, via the protocol to the transport output
