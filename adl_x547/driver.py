@@ -78,7 +78,7 @@ class ADLSputterDriver(Driver):
         if not rating_type in [self.MODE_CURRENT, self.MODE_POWER, self.MODE_VOLTAGE]:
             raise ValueError("rating type must be either MODE_CURRENT, MODE_POWER or MODE_VOLTAGE")
 
-        if rating_type == self.MODE_VOLTAGE:
+        if rating_type == self.MODE_CURRENT:
             return self.max_current
         if rating_type == self.MODE_POWER:
             return self.max_power
