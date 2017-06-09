@@ -251,6 +251,22 @@ class ADLSputterDriver(Driver):
             max_current = self.max_current
         return int(float(current)/max_current * coeff)
 
+    def convert_from_power(self, power, max_power=None, coeff=4095):
+        """ Converts and relative power (understood by the device) to an absolute value (understood by the user) """
+        if max_power is None:
+            max_power = self.max_power
+        return self.convert_to_absolute(power, max_power, coeff)
+
+    def convert_from_voltage(self, voltage, max_voltage=None, coeff=4095):
+        if max_voltage is None:
+            max_voltage = self.max_voltage
+        return self.convert_to_absolute(voltage, max_voltage, coeff)
+
+    def convert_from_current(self, current, max_current=None, coeff=4095):
+        if max_current is None:
+            max_current = self.max_current
+        return self.convert_to_absolute(current, max_current, coeff)
+
     def convert_to_absolute(self, relative_value, max_rating, coeff):
         """ Converts a relative value (voltage, power, current) to its absolute value
             To convert the relative value 4000 [rel W] to the absolute value, using the model GS 05/1000 and
