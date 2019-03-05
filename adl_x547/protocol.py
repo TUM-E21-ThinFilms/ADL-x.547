@@ -81,7 +81,7 @@ class ADLProtocol(Loggable):
         # Note that: Process locking != Semaphore locking
         # Since: Semaphores only work with threads
         # the with statement uses a process lock.
-        with transport:
+        with self._transport:
             try:
                 # We need here a semaphore, to block threads:
                 # Turning the sputter on, and changing the power while running
