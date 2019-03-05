@@ -16,8 +16,13 @@
 import struct
 
 
+def concate_byte_list(ls):
+    return b"".join(ls)
+
+
 def byte_to_binary(number):
     return struct.pack('>B', number)
+
 
 def crc16_modbus(data):
     crcmask = 0xA001
@@ -106,7 +111,7 @@ class Message(object):
         self.set_terminator()
 
     def to_binary(self):
-        return b"".join(map(byte_to_binary, self.msg))
+        return concate_byte_list(map(byte_to_binary, self.msg))
 
     def create_response(self, raw_response):
         raise ValueError("Not implemented in child class")
@@ -204,7 +209,7 @@ class Response(object):
 class Status(object):
     def __init__(self, status_bytes):
         if not len(status_bytes) == 3:
-            raise ValueError("Length of status bytes must be 3, received " + str(len(status_bytes)))
+            raise ValueError("length of status bytes must be 3, received " + str(len(status_bytes)))
 
         self.stat = status_bytes
 
