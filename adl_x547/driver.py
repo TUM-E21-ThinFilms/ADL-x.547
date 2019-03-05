@@ -102,7 +102,7 @@ class ADLSputterDriver(object):
         msg = StatusMessage()
         return self.send_message(msg)
 
-    def get_temperatur(self):
+    def get_temperature(self):
         """ Returns the temperature of the device as TemperaturResponse """
         msg = TemperatureMessage()
         return self.send_message(msg)
