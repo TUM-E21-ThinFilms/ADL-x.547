@@ -12,67 +12,53 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-import slave
-import logging
-
-import e21_util
-from e21_util.lock import InterProcessTransportLock
-from e21_util.error import CommunicationError
-
 from threading import Semaphore
 
-from slave.transport import Timeout
-from slave.protocol import Protocol
+from e21_util.error import CommunicationError
+from e21_util.interface import Loggable
+from e21_util.serial_connection import AbstractTransport, SerialTimeoutException
 
-class ADLProtocol(Protocol):
-    def __init__(self, slave_addr=0, logger=None):
 
-        if logger is None:
-            logger = logging.getLogger(__name__)
-            logger.addHandler(logging.NullHandler())
+class ADLProtocol(Loggable):
+    def __init__(self, transport, logger):
+        super(ADLProtocol, self).__init__(logger)
+        assert isinstance(transport, AbstractTransport)
 
-        self.logger = logger
-        self.receiver = slave_addr
-        self.semaphore = Semaphore(1)
+        self._transport = transport
+        self._semaphore = Semaphore(1)
 
-    def set_logger(self, logger):
-        self.logger = logger
-
-    def clear(self, transport):
-        with InterProcessTransportLock(transport):
-            self.logger.debug("Clearing message queue")
+    def clear(self):
+        with self._transport:
+            self._logger.debug("Clearing message queue")
             while True:
                 try:
                     transport.read_bytes(32)
-                except slave.transport.Timeout:
+                except SerialTimeoutException:
                     return
-        
-    def send_message(self, transport, message):
-        
-        message.set_slave_addr(self.receiver)
+
+    def send_message(self, message):
+
         message.finish()
-        
         data = message.to_binary()
-        self.logger.debug('Send: "%s"', message)
 
-        transport.write(data)
+        self._logger.debug('Send "{}"'.format(message))
+        self._transport.write(data)
 
-    def _do_query(self, transport, message):
+    def _do_query(self, message):
 
-        self.send_message(transport, message)
+        self.send_message(message)
 
         length = message.response_length()
 
         try:
-            raw_response = transport.read_bytes(length)
-        except slave.transport.Timeout:
+            raw_response = self._transport.read_bytes(length)
+        except SerialTimeoutException:
             raise CommunicationError('Could not read response. Timeout')
 
         if length <= 1:
             return message.create_response(raw_response)
 
-        self.logger.debug('Response (%s bytes): "%s"', str(len(raw_response)), " ".join(map(hex, raw_response)))
+        self._logger.debug('Response ({} bytes): "{}"'.format(len(raw_response), " ".join(map(hex, raw_response))))
 
         response_as_hex = []
 
@@ -87,28 +73,27 @@ class ADLProtocol(Protocol):
         status = response.get_status()
 
         if status.get_error() > 0 or status.get_error_on_execution() > 0 or status.get_error_code() > 0:
-            self.logger.error('Received error code: %s', status.get_error_code())
+            self._logger.error('Received error code: {}'.format(status.get_error_code()))
 
         return response
 
-
-    def query(self, transport, message):
+    def query(self, message):
         # Note that: Process locking != Semaphore locking
         # Since: Semaphores only work with threads
-        with InterProcessTransportLock(transport):
+        # the with statement uses a process lock.
+        with transport:
             try:
                 # We need here a semaphore, to block threads:
                 # Turning the sputter on, and changing the power while running
                 # might interfere two messages. In order to fix this, only
-                # let one query pass thrugh the serial interface at one time (until
+                # let one query pass through the serial interface at one time (until
                 # the response has been read).
-                self.semaphore.acquire()
-                return self._do_query(transport, message)
+                self._semaphore.acquire()
+                return self._do_query(message)
             except Exception as e:
                 raise e
             finally:
-                self.semaphore.release()
+                self._semaphore.release()
 
-
-    def write(self, transport, message):
-        return self.query(transport, message)
+    def write(self, message):
+        return self.query(message)

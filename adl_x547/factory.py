@@ -16,11 +16,17 @@
 from e21_util.log import get_sputter_logger
 from e21_util.transport import Serial
 from e21_util.ports import Ports
-from protocol import ADLProtocol
-from driver import ADLSputterDriver
+
+from adl_x547.protocol import ADLProtocol
+from adl_x547.driver import ADLSputterDriver
 
 
-class ADLSputterFactory:
+class ADLSputterFactory(object):
+
+    @staticmethod
+    def create(transport, logger):
+        return ADLSputterDriver(ADLProtocol(transport, logger))
+
     def get_logger(self):
         return get_sputter_logger('ADL Sputter', 'adlsputter.log')
 

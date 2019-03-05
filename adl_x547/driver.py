@@ -14,27 +14,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from slave.driver import Driver, Command
-from protocol import ADLProtocol
 
-from messages.status import *
-from messages.temperatur import *
-from messages.readcoefficients import *
-from messages.operationshours import *
-from messages.setramp import *
-from messages.readramp import *
-from messages.activateramp import *
-from messages.deactivateramp import *
-from messages.turnon import *
-from messages.turnoff import *
-from messages.actualvalue import *
-from messages.targetvalue import *
-from messages.readtargetvalue import *
-from messages.voltagecontrol import *
-from messages.currentcontrol import *
-from messages.powercontrol import *
+from adl_x547.protocol import ADLProtocol
 
-class ADLSputterDriver(Driver):
+from adl_x547.messages.status import *
+from adl_x547.messages.temperature import *
+from adl_x547.messages.readcoefficients import *
+from adl_x547.messages.operationshours import *
+from adl_x547.messages.setramp import *
+from adl_x547.messages.readramp import *
+from adl_x547.messages.activateramp import *
+from adl_x547.messages.deactivateramp import *
+from adl_x547.messages.turnon import *
+from adl_x547.messages.turnoff import *
+from adl_x547.messages.actualvalue import *
+from adl_x547.messages.targetvalue import *
+from adl_x547.messages.readtargetvalue import *
+from adl_x547.messages.voltagecontrol import *
+from adl_x547.messages.currentcontrol import *
+from adl_x547.messages.powercontrol import *
+
+class ADLSputterDriver(object):
 
     MODE_VOLTAGE = 1
     MODE_CURRENT = 2
@@ -46,16 +46,15 @@ class ADLSputterDriver(Driver):
 
     MODEL_ADL_GS_05_1000 = 'GS 05/1000'
 
-    def __init__(self, transport, protocol=None, model=None):
-        if protocol == None:
-            protocol = ADLProtocol()
+    def __init__(self, protocol, model=None, slave_address=0):
 
-        super(ADLSputterDriver, self).__init__(transport, protocol)
-        self.protocol = protocol
+        assert isinstance(protocol, ADLProtocol)
+        self._protocol = protocol
 
         if model is None:
-            model=self.MODEL_ADL_GS_05_1000
+            model = self.MODEL_ADL_GS_05_1000
 
+        self._slave_addr = slave_address
         self.max_power, self.max_voltage, self.max_current = None, None, None
         self.set_model(model)
 
@@ -86,16 +85,17 @@ class ADLSputterDriver(Driver):
             return self.max_voltage
 
     def send_message(self, message):
-        """ Sends the messages, via the protocol to the transport output
+        """ Sends the messages, via the protocol
 
         :param message: instance of Message
         :return: Returns the device response as Response instance
         """
-        return self._protocol.query(self._transport, message)
+        message.set_slave_addr(self._slave_addr)
+        return self._protocol.query(message)
 
     def clear(self):
-        """ Clears the transport buffer       """
-        self._protocol.clear(self._transport)
+        """ Clears the protocol buffer       """
+        self._protocol.clear()
     
     def get_status(self):
         """ Returns the status of the device as StatusResponse """
@@ -104,7 +104,7 @@ class ADLSputterDriver(Driver):
 
     def get_temperatur(self):
         """ Returns the temperature of the device as TemperaturResponse """
-        msg = TemperaturMessage()
+        msg = TemperatureMessage()
         return self.send_message(msg)
 
     def get_coefficients(self):

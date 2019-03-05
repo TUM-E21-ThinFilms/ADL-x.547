@@ -15,17 +15,19 @@
 
 from adl_x547.message import Message, Response
 
+
 class SetRampMessage(Message):
-    
+
     def __init__(self):
         Message.__init__(self)
-        self.set_function_code(30)        
-    
+        self.set_function_code(30)
+
     def set_time(self, time):
         self.set_integer(2, time)
-   
+
     def create_response(self, raw_bytes):
         return SetRampResponse(raw_bytes)
+
 
 class SetRampResponse(Response):
     def _valid(self):
@@ -34,4 +36,3 @@ class SetRampResponse(Response):
     def get_time(self):
         """ Returns the ramp time, int"""
         return self.get_integer(2)
-    
