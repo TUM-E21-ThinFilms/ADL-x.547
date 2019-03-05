@@ -91,6 +91,7 @@ class ADLProtocol(Loggable):
                 self._semaphore.acquire()
                 return self._do_query(message)
             except Exception as e:
+                # This shadows the exception trace path, but ... only solution as far as i know
                 raise e
             finally:
                 self._semaphore.release()

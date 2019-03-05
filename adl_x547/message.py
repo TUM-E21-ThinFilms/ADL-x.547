@@ -15,11 +15,6 @@
 
 import struct
 
-
-def concate_byte_list(ls):
-    return b"".join(ls)
-
-
 def byte_to_binary(number):
     return struct.pack('>B', number)
 
@@ -111,7 +106,7 @@ class Message(object):
         self.set_terminator()
 
     def to_binary(self):
-        return concate_byte_list(map(byte_to_binary, self.msg))
+        return bytearray(map(byte_to_binary, self.msg))
 
     def create_response(self, raw_response):
         raise ValueError("Not implemented in child class")
